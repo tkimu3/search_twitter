@@ -18,7 +18,7 @@ N = 6
 
 # Define the number of tweets limits to get
 # 指定した時間幅に、limitで指定した件数以上のツイートがあってもlimit以上は取得しない
-LIMIT = 10
+LIMIT = 50
 
 # 検索ワード
 SEARCH_TERM = "CVE"
