@@ -9,16 +9,19 @@ import codecs
 import pandas as pd
 import numpy as np
 import datetime
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import locale
 
 # Define how many days to look back tweets
-# 取得対象のツイートの時間幅を指定する この例では実行前日までの6日間（最大）
-N = 6
+# 取得対象のツイートの時間幅を指定する N=6の場合は実行前日までの6日間（最大）
+N = 1
 
 # Define the number of tweets limits to get
 # 指定した時間幅に、limitで指定した件数以上のツイートがあってもlimit以上は取得しない
-LIMIT = 50000
+LIMIT = 500
+
+# Define the timezone
+JST = timezone(timedelta(hours=9))
 
 # 検索ワード
 SEARCH_TERM = "CVE"
@@ -42,16 +45,19 @@ def auth():
 
     return client
 
-def time_span(days):
-    # 設定された時間幅(days)に基づいて、取得対象のツイートの時刻(start_time, end_time)を指定する
+def time_span(days, timezone):
+    # 設定された時間幅(days)とTimezoneに基づいて、当該Timezoneにおけるツイート取得対象時刻の始点と終点(start_time_tweepy, end_time_tweepy)をTweepy向けに指定し、文字列として返す
+    # 取得開始日(start_date)と取得終了日(end_date)を、文字列として返す
     # iso形式のUTC時間で指定しないとtweepy正しく時間指定ができない模様
 
-    now = datetime.now()
+    now = datetime.now(tz = timezone) #JST
     start_time = now - timedelta(days=days)
     start_time = start_time.replace(hour = 0, minute = 0, second=0, microsecond=0)
     end_time = now.replace(hour = 0, minute = 0, second=0, microsecond=0)
-    end_time_tweepy = str(end_time.isoformat()) +'+09:00'
-    start_time_tweepy = str(start_time.isoformat())+'+09:00'
+    start_time_tweepy = str(start_time.isoformat())
+    end_time_tweepy = str(end_time.isoformat())
+    # end_time_tweepy = str(end_time.isoformat()) +'+09:00' #JST
+    # start_time_tweepy = str(start_time.isoformat())+'+09:00' #JST
     return start_time_tweepy, end_time_tweepy, start_time, end_time
 
 # print(time_span(N))
@@ -77,13 +83,13 @@ def put_tweets_in_df(search_term, client, start_time_tweepy, end_time_tweepy, li
 
 
 client = auth()
-result = time_span(6)
+result = time_span(1, JST)
 start_time_tweepy = result[0]
 end_time_tweepy = result[1]
 start_time = result[2]
 end_time = result[3]
 
-print(type(start_time))
+# print(type(start_time))
 df = put_tweets_in_df(SEARCH_TERM, client, start_time_tweepy, end_time_tweepy, LIMIT)
 filename = start_time.strftime("%Y%m%d") + "-" + end_time.strftime("%Y%m%d") + ".csv"
 df.to_csv(filename, index=False,header=True)
