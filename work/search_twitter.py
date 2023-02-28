@@ -18,7 +18,7 @@ N = 1
 
 # Define the number of tweets limits to get
 # 指定した時間幅に、limitで指定した件数以上のツイートがあってもlimit以上は取得しない
-LIMIT = 500
+LIMIT = 50000
 
 # Define the timezone
 JST = timezone(timedelta(hours=9))
@@ -47,8 +47,9 @@ def auth():
 
 def time_span(days, timezone):
     # 設定された時間幅(days)とTimezoneに基づいて、当該Timezoneにおけるツイート取得対象時刻の始点と終点(start_time_tweepy, end_time_tweepy)をTweepy向けに指定し、文字列として返す
-    # 取得開始日(start_date)と取得終了日(end_date)を、文字列として返す
     # iso形式のUTC時間で指定しないとtweepy正しく時間指定ができない模様
+    # 取得開始日(start_date)と取得終了日(end_date)を、文字列として返す
+
 
     now = datetime.now(tz = timezone) #JST
     start_time = now - timedelta(days=days)
@@ -58,7 +59,11 @@ def time_span(days, timezone):
     end_time_tweepy = str(end_time.isoformat())
     # end_time_tweepy = str(end_time.isoformat()) +'+09:00' #JST
     # start_time_tweepy = str(start_time.isoformat())+'+09:00' #JST
-    return start_time_tweepy, end_time_tweepy, start_time, end_time
+
+    start_date = start_time.strftime("%Y%m%d")
+    # end_date should be -1 day because all the tweets are included in the day before today
+    end_date = (end_time - timedelta(days = 1)).strftime("%Y%m%d")
+    return start_time_tweepy, end_time_tweepy, start_date, end_date
 
 # print(time_span(N))
 
@@ -86,15 +91,15 @@ client = auth()
 result = time_span(1, JST)
 start_time_tweepy = result[0]
 end_time_tweepy = result[1]
-start_time = result[2]
-end_time = result[3]
+start_date = result[2]
+end_date = result[3]
 
 # print(type(start_time))
 df = put_tweets_in_df(SEARCH_TERM, client, start_time_tweepy, end_time_tweepy, LIMIT)
-filename = start_time.strftime("%Y%m%d") + "-" + end_time.strftime("%Y%m%d") + ".csv"
+filename = start_date + "-" + end_date + ".csv"
 df.to_csv(filename, index=False,header=True)
 
-print(f"Time Span : from {start_time.strftime('%Y%m%d')} to  {end_time.strftime('%Y%m%d')}\n")
+print(f"Time Span : from {start_date} to  {end_date}\n")
 print(f"The number of tweets during the time span: {len(df)}\n")
 print(f"df.head() : {df.head()}")
 print(f"df.tail() : {df.tail()}")
