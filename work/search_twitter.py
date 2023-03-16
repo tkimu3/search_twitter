@@ -14,7 +14,7 @@ import locale
 
 # Define how many days to look back tweets
 # 取得対象のツイートの時間幅を指定する N=6の場合は実行前日までの6日間（最大）
-N = 1
+N = 5
 
 # Define the number of tweets limits to get
 # 指定した時間幅に、limitで指定した件数以上のツイートがあってもlimit以上は取得しない
@@ -88,7 +88,7 @@ def put_tweets_in_df(search_term, client, start_time_tweepy, end_time_tweepy, li
 
 
 client = auth()
-result = time_span(1, JST)
+result = time_span(N, JST)
 start_time_tweepy = result[0]
 end_time_tweepy = result[1]
 start_date = result[2]
