@@ -76,7 +76,7 @@ for csv_file in csv_filepaths:
 filename_date = datetime.strftime(end_date, '%Y%m%d')
 print(filename_date)
 
-filename = "all_" + filename_date + ".csv"
+filename = "tweets_" + filename_date + ".csv"
 
 # Export all the DF to "all.csv"
 df.to_csv(filename, index = False, header = True)
