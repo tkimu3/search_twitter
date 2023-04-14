@@ -25,25 +25,6 @@ df_tmp = pd.DataFrame()
 end_date = None
 
 for csv_file in csv_filepaths:
-    # read each csv file in the folder and store it into the temporary dataframe
-    df_tmp = pd.read_csv(csv_file, sep=',', engine = 'python', header = 0, on_bad_lines='skip')
-
-    # Display the number of lines in the file
-    print(f"{csv_file}:{len(df_tmp)} lines")
-
-    # Concatenate df_tmp to df
-    df = pd.concat([df, df_tmp])
-
-    # Display the number of lines in the concatenated DF so far
-    print(f"total:{len(df)} lines")
-
-    # Sort rows in the concatenated DF by "created_at"
-    df = df.sort_values(['created_at'], axis = 0, ascending = True)
-
-    # Clear the temporary DF
-    df_tmp = pd.DataFrame()
-
-    # Find the newest date in the csv_file name
 
     # check if the filename matches the datetime expression
     # https://note.nkmk.me/python-re-match-object-span-group/
@@ -51,6 +32,28 @@ for csv_file in csv_filepaths:
 
     if m:
         # print(m.group())
+        file = f"{m.group()}.csv"
+        # read each csv file in the folder and store it into the temporary dataframe
+        df_tmp = pd.read_csv(file, sep=',', engine = 'python', header = 0, on_bad_lines='skip')
+
+        # Display the number of lines in the file
+        print(f"{file}:{len(df_tmp)} lines")
+
+        # Concatenate df_tmp to df
+        df = pd.concat([df, df_tmp])
+
+        # Display the number of lines in the concatenated DF so far
+        print(f"total:{len(df)} lines")
+
+        # Sort rows in the concatenated DF by "created_at"
+        df = df.sort_values(['created_at'], axis = 0, ascending = True)
+
+        # Clear the temporary DF
+        df_tmp = pd.DataFrame()
+
+
+
+        ## Find the newest date in the csv_file name
 
         # Pickup the latter date (right after the "-") in the filename
         # https://python-academia.com/file-extract/
@@ -74,9 +77,39 @@ for csv_file in csv_filepaths:
 
 # set the date to put in the filename
 filename_date = datetime.strftime(end_date, '%Y%m%d')
-print(filename_date)
+# print(filename_date)
 
-filename = "tweets_" + filename_date + ".csv"
 
-# Export all the DF to "all.csv"
-df.to_csv(filename, index = False, header = True)
+
+tweets_filename = f"{len(df)}tweets_{filename_date}.csv"
+
+# Export all the DF to CSV file
+df.to_csv(tweets_filename, index = False, header = True)
+
+# Extract only the CVE from the string matched "text"
+
+# https://note.nkmk.me/python-re-match-object-span-group/
+# Pythonの正規表現モジュールreのmatch()やsearch()は、文字列が正規表現パターンにマッチした場合、マッチした部分をマッチオブジェクトとして返す。
+# マッチオブジェクトのgroupメソッドを実行することでマッチした文字列を抽出できる
+
+df_matched = df[df["text"].str.contains(r'CVE-[0-9]{4}-[0-9]{4,5}')]
+list_CVE = []
+df_plusCVE = df_matched
+for i, s in enumerate(df_matched["text"].to_list()):
+
+    # find the matched text with the CVE format
+    matched_text = re.search('CVE-[0-9]{4}-[0-9]{4,5}',s)
+    # if i < 5:
+    #     print(matched_text.group())
+        # df_plusCVE = pd.concat([df_plusCVE, pd.DataFrame({"CVE": pd.Series([matched_text.group()])})], axis=1)
+
+    # Add the CVE number to the list_CVE
+    list_CVE.append(matched_text.group())
+
+# Add a new column "CVE"
+df_plusCVE['CVE'] = list_CVE
+
+IncludingCVEs_filename = f"{len(df_plusCVE)}IncludingCVEs_{filename_date}.csv"
+
+# Export all the DF to CSV file
+df_plusCVE.to_csv(IncludingCVEs_filename, index = False, header = True)
