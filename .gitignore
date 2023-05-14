@@ -1,4 +1,5 @@
 config.py
 *.csv
+*._csv
 .DS_Store
 __pycache__

@@ -14,7 +14,7 @@ import locale
 
 # Define how many days to look back tweets
 # 取得対象のツイートの時間幅を指定する N=6の場合は実行前日までの6日間（最大）
-N = 6
+N = 3
 
 # Define the number of tweets limits to get
 # 指定した時間幅に、limitで指定した件数以上のツイートがあってもlimit以上は取得しない
